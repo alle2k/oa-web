@@ -1,5 +1,5 @@
 <template>
-  <div class="approvalFlow">
+  <div class="approvalFlow" v-if="flowNodeList.length">
     <h3 style="padding-left: 10px; padding-top: 15px; color: #303133">
       审批详情
     </h3>

@@ -315,6 +315,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="打款截图：">
             <el-image
+              v-if="viewDrawer.paymentScreenshot"
               style="width: 100px; height: 100px; margin-left: 42px"
               :src="viewDrawer.paymentScreenshot"
               :preview-src-list="viewDrawer.paymentScreenshotList"
@@ -952,6 +953,9 @@ function hideCompanyContactUserName(dest) {
 }
 
 function hideCompanyContactUserTel(dest) {
+  if (!dest.companyContactUserTel) {
+    return ''
+  }
   return (
     dest.companyContactUserTel.substr(0, 3) +
     '****' +
