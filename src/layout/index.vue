@@ -89,7 +89,7 @@ onMounted(() => {
 
 const checkVersion = async () => {
   try {
-    const response = await fetch('/package.json?t=' + new Date().getTime())
+    const response = await fetch('/version.json?t=' + Date.now())
     const data = await response.json()
     if (data.version !== VITE_APP_VERSION) {
       ElMessageBox.alert(
