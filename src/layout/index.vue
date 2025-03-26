@@ -1,8 +1,19 @@
 <template>
-  <div :class="classObj" class="app-wrapper" :style="{ '--current-color': theme }">
-    <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
+  <div
+    :class="classObj"
+    class="app-wrapper"
+    :style="{ '--current-color': theme }"
+  >
+    <div
+      v-if="device === 'mobile' && sidebar.opened"
+      class="drawer-bg"
+      @click="handleClickOutside"
+    />
     <sidebar v-if="!sidebar.hide" class="sidebar-container" />
-    <div :class="{ hasTagsView: needTagsView, sidebarHide: sidebar.hide }" class="main-container">
+    <div
+      :class="{ hasTagsView: needTagsView, sidebarHide: sidebar.hide }"
+      class="main-container"
+    >
       <div :class="{ 'fixed-header': fixedHeader }">
         <navbar @setLayout="setLayout" />
         <tags-view v-if="needTagsView" />
@@ -23,14 +34,16 @@ import defaultSettings from '@/settings'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
 import Watermark from '@/components/Watermark'
+import { onMounted } from 'vue'
+import { ElMessageBox } from 'element-plus'
 
 const settingsStore = useSettingsStore()
-const theme = computed(() => settingsStore.theme);
-const sideTheme = computed(() => settingsStore.sideTheme);
-const sidebar = computed(() => useAppStore().sidebar);
-const device = computed(() => useAppStore().device);
-const needTagsView = computed(() => settingsStore.tagsView);
-const fixedHeader = computed(() => settingsStore.fixedHeader);
+const theme = computed(() => settingsStore.theme)
+const sideTheme = computed(() => settingsStore.sideTheme)
+const sidebar = computed(() => useAppStore().sidebar)
+const device = computed(() => useAppStore().device)
+const needTagsView = computed(() => settingsStore.tagsView)
+const fixedHeader = computed(() => settingsStore.fixedHeader)
 
 const classObj = computed(() => ({
   hideSidebar: !sidebar.value.opened,
@@ -39,14 +52,17 @@ const classObj = computed(() => ({
   mobile: device.value === 'mobile'
 }))
 
-const { width, height } = useWindowSize();
-const WIDTH = 992; // refer to Bootstrap's responsive design
+const { width, height } = useWindowSize()
+const WIDTH = 992 // refer to Bootstrap's responsive design
 
-watch(() => device.value, () => {
-  if (device.value === 'mobile' && sidebar.value.opened) {
-    useAppStore().closeSideBar({ withoutAnimation: false })
+watch(
+  () => device.value,
+  () => {
+    if (device.value === 'mobile' && sidebar.value.opened) {
+      useAppStore().closeSideBar({ withoutAnimation: false })
+    }
   }
-})
+)
 
 watchEffect(() => {
   if (width.value - 1 < WIDTH) {
@@ -61,15 +77,46 @@ function handleClickOutside() {
   useAppStore().closeSideBar({ withoutAnimation: false })
 }
 
-const settingRef = ref(null);
+const settingRef = ref(null)
 function setLayout() {
-  settingRef.value.openSetting();
+  settingRef.value.openSetting()
+}
+
+onMounted(() => {
+  checkVersion()
+  setInterval(checkVersion, 3 * 60 * 1000)
+})
+
+const checkVersion = async () => {
+  try {
+    const response = await fetch('/package.json?t=' + new Date().getTime())
+    const data = await response.json()
+    if (data.version !== VITE_APP_VERSION) {
+      ElMessageBox.alert(
+        `当前版本：${VITE_APP_VERSION}，最新版本：${data.version}，是否更新？`,
+        '检测到新版本',
+        {
+          // if you want to disable its autofocus
+          // autofocus: false,
+          showClose: false,
+          confirmButtonText: '确定',
+          callback: (action) => {
+            if (action === 'confirm') {
+              window.location.reload()
+            }
+          }
+        }
+      )
+    }
+  } catch (error) {
+    console.error('版本检测失败:', error)
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-  @import "@/assets/styles/mixin.scss";
-  @import "@/assets/styles/variables.module.scss";
+@import '@/assets/styles/mixin.scss';
+@import '@/assets/styles/variables.module.scss';
 
 .app-wrapper {
   @include clearfix;
