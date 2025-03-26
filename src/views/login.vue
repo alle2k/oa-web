@@ -1,4 +1,5 @@
 <template>
+  {{ appVersion }}
   <div class="login">
     <el-form
       ref="loginRef"
@@ -91,7 +92,7 @@ import { getCodeImg } from '@/api/login'
 import Cookies from 'js-cookie'
 import { encrypt, decrypt } from '@/utils/jsencrypt'
 import useUserStore from '@/store/modules/user'
-
+const appVersion = ref(VITE_APP_VERSION)
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()

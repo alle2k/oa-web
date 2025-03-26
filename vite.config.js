@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import createVitePlugins from './vite/plugins'
+import { version } from './package.json'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
@@ -31,8 +32,8 @@ export default defineConfig(({ mode, command }) => {
       proxy: {
         // https://cn.vitejs.dev/config/#server-proxy
         '/oa': {
-          // target: 'http://localhost:8081',
-          target: 'http://zhaokai.xyz:8081',
+          target: 'http://localhost:8081',
+          // target: 'http://zhaokai.xyz:8081',
           changeOrigin: true,
           // 不需要重写路径，因为后端接口本身就带有 oa 前缀
           // rewrite: (p) => p.replace(/^\/oa/, '')
@@ -55,6 +56,9 @@ export default defineConfig(({ mode, command }) => {
           }
         ]
       }
+    },
+    define: {
+      'VITE_APP_VERSION': JSON.stringify(version),
     }
   }
 })
