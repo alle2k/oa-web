@@ -3,8 +3,9 @@ import auth from './auth'
 import cache from './cache'
 import modal from './modal'
 import download from './download'
+import coze from './coze'
 
-export default function installPlugins(app){
+export default function installPlugins(app) {
   // 页签操作
   app.config.globalProperties.$tab = tab
   // 认证对象
@@ -15,4 +16,6 @@ export default function installPlugins(app){
   app.config.globalProperties.$modal = modal
   // 下载文件
   app.config.globalProperties.$download = download
+  // 扣子
+  app.config.globalProperties.$coze = coze
 }

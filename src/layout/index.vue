@@ -82,9 +82,11 @@ function setLayout() {
   settingRef.value.openSetting()
 }
 
+const { proxy } = getCurrentInstance()
 onMounted(() => {
   checkVersion()
   setInterval(checkVersion, 3 * 60 * 1000)
+  proxy.$coze.initCozeClient()
 })
 
 const checkVersion = async () => {

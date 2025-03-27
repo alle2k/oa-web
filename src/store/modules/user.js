@@ -12,7 +12,9 @@ const useUserStore = defineStore(
       name: '',
       avatar: '',
       roles: [],
-      permissions: []
+      permissions: [],
+      nickName: '',
+      cozeAccessToken: ''
     }),
     actions: {
       // 登录
@@ -51,7 +53,7 @@ const useUserStore = defineStore(
             this.avatar = avatar;
             this.id = user.userId;
             this.nickName = user.nickName;
-            
+            this.cozeAccessToken = res.cozeAccessToken;
             resolve(res)
           }).catch(error => {
             reject(error)
