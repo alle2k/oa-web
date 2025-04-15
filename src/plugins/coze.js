@@ -9,14 +9,34 @@ export default {
                 type: 'bot',
                 isIframe: false
             },
-            componentProps: {
-                title: 'Coze',
-            },
             auth: {
                 type: 'token',
                 token: userStore.cozeAccessToken, // 从vuex中获取token,
                 onRefreshToken: function () {
                     return userStore.cozeAccessToken
+                }
+            },
+            userInfo: { // 从vuex中获取用户信息, 用于展示用户头像和昵称, 不填则展示默认头像和昵称
+                id: userStore.id,
+                url: userStore.avatar,
+                nickName: userStore.nickName, // 昵称, 不填则展示默认昵称
+            },
+            ui: {
+                header: {
+                    isShow: true,
+                },
+                footer: {
+                    isShow: true,
+                    expressionText: 'Powered by {{name}} Technology Co., Ltd.',
+                    linkvars: {
+                        name: {
+                            text: '博卓企服',
+                            link: 'https://zhaokai.xyz'
+                        }
+                    }
+                },
+                chatBot: {
+                    title: '会话' // 机器人名称, 不填则展示默认名称
                 }
             }
         });
