@@ -156,7 +156,6 @@
           <el-tooltip
             content="修改"
             placement="top"
-            v-if="allowSelection(scope.row)"
           >
             <el-button
               link
@@ -182,7 +181,6 @@
           <el-tooltip
             content="数据权限"
             placement="top"
-            v-if="allowSelection(scope.row)"
           >
             <el-button
               link
@@ -728,7 +726,7 @@ function cancelDataScope() {
 }
 
 function allowSelection(row) {
-  return row.roleId !== 1 && row.roleId !== 2 && row.roleId !== 3
+  return row.roleId !== 1 && row.roleId !== 2 && row.roleId !== 3  && row.roleId !== 4
 }
 
 getList()
