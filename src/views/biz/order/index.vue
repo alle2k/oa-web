@@ -17,10 +17,7 @@
         />
       </el-form-item>
       <el-form-item label="提交人" prop="createUser">
-        <UserSelect
-          v-model:userSelectModel="queryForm.createUser"
-          @userSelectChange="test"
-        />
+        <UserSelect v-model:userSelectModel="queryForm.createUser" />
       </el-form-item>
       <el-form-item label="审批状态" prop="approvalStatus">
         <ApprovalStatusSelect v-model:modelValue="queryForm.approvalStatus" />
@@ -43,6 +40,11 @@
       </el-form-item>
     </el-form>
     <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5" v-if="checkPermi(['biz:order:sensitive'])">
+        <el-button type="success" plain :icon="visitIcon" @click="visitHandle" >
+          {{ visitText }}
+        </el-button>
+      </el-col>
       <el-col :span="1.5">
         <el-button
           type="primary"
@@ -296,7 +298,7 @@
                         @click="annexPreview(scope.row)"
                         text
                       >
-                        {{ scope.row.substr(scope.row.lastIndexOf('/') + 1) }}
+                        {{ scope.row.substr(scope.row.lastIndexOf("/") + 1) }}
                       </el-button>
                     </template>
                   </el-popover>
@@ -581,95 +583,126 @@
 </template>
 
 <script setup name="Order">
-import { parseTime } from '@/utils/oa'
-import pdfObj from 'pdfobject'
-import { ElImage } from 'element-plus'
-import { checkPermi } from '@/utils/permission'
-import adoptPng from '@/assets/images/adopt.png'
-import waitPng from '@/assets/images/wait.png'
-import refusePng from '@/assets/images/refuse.png'
-import revokePng from '@/assets/images/revoke.png'
-import returnPng from '@/assets/images/return.png'
-import { reactive } from 'vue'
-import { pageQuery, save, modify, delOrder } from '@/api/core/businessOrder'
+import { parseTime } from "@/utils/oa";
+import pdfObj from "pdfobject";
+import { ElImage } from "element-plus";
+import { checkPermi } from "@/utils/permission";
+import adoptPng from "@/assets/images/adopt.png";
+import waitPng from "@/assets/images/wait.png";
+import refusePng from "@/assets/images/refuse.png";
+import revokePng from "@/assets/images/revoke.png";
+import returnPng from "@/assets/images/return.png";
+import { reactive } from "vue";
+import { pageQuery, save, modify, delOrder } from "@/api/core/businessOrder";
 
-const { proxy } = getCurrentInstance()
+const { proxy } = getCurrentInstance();
 
-const showSearch = ref(true)
+const showSearch = ref(true);
+const visitFlag = ref(false);
+const visitIcon = ref("View");
+const visitText = ref("全部显示");
+
+function visitHandle() {
+  if (!visitFlag.value) {
+    visitIcon.value = "Hide";
+    visitText.value = "全部隐藏";
+    visitFlag.value = true;
+    if (orderList.value) {
+      orderList.value.forEach((x) => {
+        x.companyNameShow = x.companyName;
+        x.companyNameVisitFlag = !x.companyNameVisitFlag;
+        x.companyContactUserNameShow = x.companyContactUserName;
+        x.companyContactUserNameVisitFlag = !x.companyContactUserNameVisitFlag;
+        x.companyContactUserTelShow = x.companyContactUserTel;
+        x.companyContactUserTelVisitFlag = !x.companyContactUserTelVisitFlag;
+      });
+    }
+    return;
+  }
+  visitIcon.value = "View";
+  visitText.value = "全部显示";
+  visitFlag.value = false;
+  if (orderList.value) {
+    orderList.value.forEach((x) => {
+      x.companyNameShow = hideCompanyName(x);
+      x.companyNameVisitFlag = !x.companyNameVisitFlag;
+      x.companyContactUserNameShow = hideCompanyContactUserName(x);
+      x.companyContactUserNameVisitFlag = !x.companyContactUserNameVisitFlag;
+      x.companyContactUserTelShow = hideCompanyContactUserTel(x);
+      x.companyContactUserTelVisitFlag = !x.companyContactUserTelVisitFlag;
+    });
+  }
+}
 
 const approvalStatusImgMap = reactive({
   1: adoptPng,
   0: waitPng,
   2: refusePng,
   4: revokePng,
-  5: returnPng
-})
+  5: returnPng,
+});
 
 function resetQueryArea() {
-  proxy.resetForm('queryFormRef')
-  getList()
+  proxy.resetForm("queryFormRef");
+  getList();
 }
 
-function test() {
-  console.log(arguments)
-}
-
-const queryFormRef = ref(null)
+const queryFormRef = ref(null);
 const queryForm = reactive({
   auditNo: undefined,
   createUser: undefined,
   approvalStatus: undefined,
   companyName: undefined,
   pageNum: 1,
-  pageSize: 10
-})
+  pageSize: 10,
+});
 
-const tableRef = ref(null)
+const tableRef = ref(null);
 function del() {
-  proxy.$modal.confirm('确定删除吗？').then(() => {
-    var ids = tableRef.value.getSelectionRows().map((x) => x.id)
+  proxy.$modal.confirm("确定删除吗？").then(() => {
+    var ids = tableRef.value.getSelectionRows().map((x) => x.id);
     if (!ids.length) {
-      getList()
-      return
+      getList();
+      return;
     }
     delOrder(tableRef.value.getSelectionRows().map((x) => x.id))
       .then(() => {
-        proxy.$message.success('删除成功')
-        getList()
+        proxy.$message.success("删除成功");
+        getList();
       })
       .catch(() => {
-        proxy.$message.error('删除失败')
-      })
-  })
+        proxy.$message.error("删除失败");
+      });
+  });
 }
 
-const loading = ref(true)
-const total = ref(0)
+const loading = ref(true);
+const total = ref(0);
 function getList() {
-  loading.value = true
+  loading.value = true;
   pageQuery(queryForm).then((x) => {
     orderList.value = x.rows.map((x) => {
-      x.companyNameShow = hideCompanyName(x)
-      x.companyNameVisitFlag = false
-      x.companyContactUserNameShow = hideCompanyContactUserName(x)
-      x.companyContactUserNameVisitFlag = false
-      x.companyContactUserTelShow = hideCompanyContactUserTel(x)
-      x.companyContactUserTelVisitFlag = false
+      x.companyNameShow = hideCompanyName(x);
+      x.companyNameVisitFlag = false;
+      x.companyContactUserNameShow = hideCompanyContactUserName(x);
+      x.companyContactUserNameVisitFlag = false;
+      x.companyContactUserTelShow = hideCompanyContactUserTel(x);
+      x.companyContactUserTelVisitFlag = false;
       x.bizTypeList = x.itemList
         .map((x) => {
-          return x.bizTypeName
+          return x.bizTypeName;
         })
-        .join(', ')
-      return x
-    })
-    total.value = x.total
-    loading.value = false
-  })
+        .join(", ");
+      return x;
+    });
+    total.value = x.total;
+    loading.value = false;
+  });
 }
-const orderList = ref([])
+const orderList = ref([]);
 
-var insertFormRef = ref(null)
-var insertDialogVisibleFlag = ref(false)
+var insertFormRef = ref(null);
+var insertDialogVisibleFlag = ref(false);
 var insertForm = ref({
   paymentTime: undefined,
   companyName: undefined,
@@ -679,81 +712,81 @@ var insertForm = ref({
   remark: undefined,
   annexUrlList: undefined,
   paymentScreenshotList: undefined,
-  bizTypeList: undefined
-})
+  bizTypeList: undefined,
+});
 
 const insertRules = ref({
-  paymentTime: [{ required: true, message: '请选择付款时间', trigger: 'blur' }],
+  paymentTime: [{ required: true, message: "请选择付款时间", trigger: "blur" }],
   companyName: [
-    { required: true, message: '请输入甲方公司名称', trigger: 'blur' },
-    { min: 8, message: '请输入8位以上的甲方公司名称', trigger: 'blur' }
+    { required: true, message: "请输入甲方公司名称", trigger: "blur" },
+    { min: 8, message: "请输入8位以上的甲方公司名称", trigger: "blur" },
   ],
   companyContactUserName: [
-    { required: true, message: '请输入甲方联系人姓名', trigger: 'blur' },
-    { min: 2, message: '请输入2位以上的甲方联系人姓名', trigger: 'blur' }
+    { required: true, message: "请输入甲方联系人姓名", trigger: "blur" },
+    { min: 2, message: "请输入2位以上的甲方联系人姓名", trigger: "blur" },
   ],
   companyContactUserTel: [
-    { required: true, message: '请输入甲方联系人电话', trigger: 'blur' },
-    { min: 11, message: '请输入11位以上的甲方联系人电话', trigger: 'blur' },
+    { required: true, message: "请输入甲方联系人电话", trigger: "blur" },
+    { min: 11, message: "请输入11位以上的甲方联系人电话", trigger: "blur" },
     {
       pattern: /^1[3456789]\d{9}$/,
-      message: '请输入正确的手机号',
-      trigger: 'blur'
-    }
+      message: "请输入正确的手机号",
+      trigger: "blur",
+    },
   ],
   amount: [
     {
       required: true,
-      type: 'number',
-      message: '请输入成交金额',
-      trigger: 'blur'
-    }
+      type: "number",
+      message: "请输入成交金额",
+      trigger: "blur",
+    },
   ],
-  remark: [{ max: 500, message: '内容长度不能超过500', trigger: 'blur' }],
+  remark: [{ max: 500, message: "内容长度不能超过500", trigger: "blur" }],
   annexUrlList: [
     {
       required: true,
-      type: 'array',
-      message: '请上传合同附件',
-      trigger: 'blur'
-    }
+      type: "array",
+      message: "请上传合同附件",
+      trigger: "blur",
+    },
   ],
   paymentScreenshotList: [
     {
       required: true,
-      type: 'array',
-      message: '请上传打款截图',
-      trigger: 'blur'
-    }
+      type: "array",
+      message: "请上传打款截图",
+      trigger: "blur",
+    },
   ],
   bizTypeList: [
     {
       required: true,
-      type: 'array',
-      message: '请选择业务类型',
-      trigger: 'blur'
-    }
-  ]
-})
+      type: "array",
+      message: "请选择业务类型",
+      trigger: "blur",
+    },
+  ],
+});
 
 function submitForm(form) {
   if (!form) {
-    return
+    return;
   }
   form.validate((valid) => {
     if (valid) {
       save(insertForm.value).then((response) => {
-        proxy.$modal.msgSuccess('新增成功')
-        getList()
-      })
-      closeInsertForm()
+        proxy.$modal.msgSuccess("新增成功");
+        getList();
+      });
+      closeInsertForm();
     }
-  })
+  });
 }
 
 function closeInsertForm() {
-  insertDialogVisibleFlag.value = false
-  proxy.resetForm('insertFormRef')
+  insertDialogVisibleFlag.value = false;
+  proxy.resetForm("insertFormRef");
 }
 
 function allowEdit(row, index) {
@@ -761,162 +794,162 @@ function allowEdit(row, index) {
     row.approvalStatus === 4 ||
     row.approvalStatus === 2 ||
     row.approvalStatus === 5
-  )
+  );
 }
 
-const nodeList = ref([])
-var viewDrawer = ref({})
-var detailDrawer = ref(false)
+const nodeList = ref([]);
+var viewDrawer = ref({});
+var detailDrawer = ref(false);
 
 function closeDetailDrawer() {
-  detailDrawer.value = false
+  detailDrawer.value = false;
 }
 
-var modifyFormRef = ref(null)
-var modifyForm = ref({})
-var editDrawer = ref(false)
+var modifyFormRef = ref(null);
+var modifyForm = ref({});
+var editDrawer = ref(false);
 function openEditDrawer() {
-  editDrawer.value = true
-  modifyForm.value = JSON.parse(JSON.stringify(arguments[0]))
+  editDrawer.value = true;
+  modifyForm.value = JSON.parse(JSON.stringify(arguments[0]));
   modifyForm.value.bizTypeList = modifyForm.value.itemList.map((x) => {
-    return { label: x.bizTypeName, value: x.bizType }
-  })
+    return { label: x.bizTypeName, value: x.bizType };
+  });
   modifyForm.value.paymentTime = parseTime(
     new Date(modifyForm.value.paymentTime)
-  )
+  );
   modifyForm.value.annexUrlList = modifyForm.value.annexUrlList.map((x) => {
-    var obj = {}
-    obj.name = x.substr(x.lastIndexOf('/') + 1)
-    obj.url = x
+    var obj = {};
+    obj.name = x.substr(x.lastIndexOf("/") + 1);
+    obj.url = x;
     obj.response = {
-      data: x
-    }
-    return obj
-  })
+      data: x,
+    };
+    return obj;
+  });
   modifyForm.value.paymentScreenshotList =
     modifyForm.value.paymentScreenshotList.map((x) => {
-      var obj = {}
-      obj.name = x.substr(x.lastIndexOf('/') + 1)
-      obj.url = x
+      var obj = {};
+      obj.name = x.substr(x.lastIndexOf("/") + 1);
+      obj.url = x;
       obj.response = {
-        data: x
-      }
-      return obj
-    })
+        data: x,
+      };
+      return obj;
+    });
 }
 
 function submitModifyForm(form) {
   if (!form) {
-    return
+    return;
   }
   form.validate((valid) => {
     if (valid) {
-      if (typeof modifyForm.value.annexUrlList[0] === 'object') {
+      if (typeof modifyForm.value.annexUrlList[0] === "object") {
         modifyForm.value.annexUrlList = modifyForm.value.annexUrlList.map(
           (x) => {
-            return x.response.data
+            return x.response.data;
           }
-        )
+        );
       }
-      if (typeof modifyForm.value.paymentScreenshotList[0] === 'object') {
+      if (typeof modifyForm.value.paymentScreenshotList[0] === "object") {
         modifyForm.value.paymentScreenshotList =
           modifyForm.value.paymentScreenshotList.map((x) => {
-            return x.response.data
-          })
+            return x.response.data;
+          });
       }
-      var method = modify
+      var method = modify;
       if (
         modifyForm.value.approvalStatus === 2 ||
         modifyForm.value.approvalStatus === 4
       ) {
-        method = save
+        method = save;
       }
       modifyForm.value.bizTypeList = modifyForm.value.bizTypeList.map((x) => {
-        return x.value
-      })
+        return x.value;
+      });
       method(modifyForm.value).then((response) => {
-        proxy.$modal.msgSuccess('修改成功')
-        getList()
-      })
-      closeModifyForm()
+        proxy.$modal.msgSuccess("修改成功");
+        getList();
+      });
+      closeModifyForm();
     }
-  })
+  });
 }
 
 function closeModifyForm() {
-  editDrawer.value = false
-  proxy.resetForm('modifyFormRef')
+  editDrawer.value = false;
+  proxy.resetForm("modifyFormRef");
 }
 
 function viewCompanyName(row) {
   if (row.companyNameVisitFlag) {
-    row.companyNameVisitFlag = !row.companyNameVisitFlag
-    row.companyNameShow = hideCompanyName(row)
-    return
+    row.companyNameVisitFlag = !row.companyNameVisitFlag;
+    row.companyNameShow = hideCompanyName(row);
+    return;
   }
-  row.companyNameVisitFlag = !row.companyNameVisitFlag
-  row.companyNameShow = row.companyName
+  row.companyNameVisitFlag = !row.companyNameVisitFlag;
+  row.companyNameShow = row.companyName;
 }
 
 function viewCompanyContactUserName(row) {
   if (row.companyContactUserNameVisitFlag) {
-    row.companyContactUserNameVisitFlag = !row.companyContactUserNameVisitFlag
-    row.companyContactUserNameShow = hideCompanyContactUserName(row)
-    return
+    row.companyContactUserNameVisitFlag = !row.companyContactUserNameVisitFlag;
+    row.companyContactUserNameShow = hideCompanyContactUserName(row);
+    return;
   }
-  row.companyContactUserNameVisitFlag = !row.companyContactUserNameVisitFlag
-  row.companyContactUserNameShow = row.companyContactUserName
+  row.companyContactUserNameVisitFlag = !row.companyContactUserNameVisitFlag;
+  row.companyContactUserNameShow = row.companyContactUserName;
 }
 
 function viewCompanyContactUserTel(row) {
   if (row.companyContactUserTelVisitFlag) {
-    row.companyContactUserTelVisitFlag = !row.companyContactUserTelVisitFlag
-    row.companyContactUserTelShow = hideCompanyContactUserTel(row)
-    return
+    row.companyContactUserTelVisitFlag = !row.companyContactUserTelVisitFlag;
+    row.companyContactUserTelShow = hideCompanyContactUserTel(row);
+    return;
   }
-  row.companyContactUserTelVisitFlag = !row.companyContactUserTelVisitFlag
-  row.companyContactUserTelShow = row.companyContactUserTel
+  row.companyContactUserTelVisitFlag = !row.companyContactUserTelVisitFlag;
+  row.companyContactUserTelShow = row.companyContactUserTel;
 }
 
 function download(targetUrl) {
-  window.location = targetUrl
+  window.location = targetUrl;
 }
 
-const pdfDialogVisible = ref(false)
-const pdfContainer = ref(null)
-const dialogImageUrl = ref('')
-const dialogVisible = ref(false)
+const pdfDialogVisible = ref(false);
+const pdfContainer = ref(null);
+const dialogImageUrl = ref("");
+const dialogVisible = ref(false);
 const annexPreview = async (arg) => {
-  var fileUrl = ''
-  if (typeof arg === 'string') {
-    fileUrl = arg
-  } else if ('response' in arg && typeof arg['response'] === 'object') {
-    fileUrl = arg.response?.data
+  var fileUrl = "";
+  if (typeof arg === "string") {
+    fileUrl = arg;
+  } else if ("response" in arg && typeof arg["response"] === "object") {
+    fileUrl = arg.response?.data;
   }
-  if (fileUrl.lastIndexOf('.pdf') > 0) {
-    const response = await fetch(fileUrl)
-    const blob = await response.blob()
-    const pdfUrl = URL.createObjectURL(blob)
-    pdfDialogVisible.value = true
+  if (fileUrl.lastIndexOf(".pdf") > 0) {
+    const response = await fetch(fileUrl);
+    const blob = await response.blob();
+    const pdfUrl = URL.createObjectURL(blob);
+    pdfDialogVisible.value = true;
     nextTick(() => {
       pdfObj.embed(pdfUrl, pdfContainer.value, {
-        width: '100%',
-        height: '800px'
-      })
-    })
-    return
+        width: "100%",
+        height: "800px",
+      });
+    });
+    return;
   }
-  dialogImageUrl.value = fileUrl
-  dialogVisible.value = true
-}
+  dialogImageUrl.value = fileUrl;
+  dialogVisible.value = true;
+};
 
 function approvalFlowRefresh() {
-  closeModifyForm()
-  closeDetailDrawer()
-  getList()
+  closeModifyForm();
+  closeDetailDrawer();
+  getList();
 }
 
-getList()
+getList();
 </script>
 
 <script>
@@ -924,15 +957,15 @@ function hideCompanyName(dest) {
   return (
     dest.companyName.substr(0, 2) +
     (function () {
-      let str = ''
-      let hideLength = dest.companyName.length - 4
+      let str = "";
+      let hideLength = dest.companyName.length - 4;
       for (let i = 0; i < hideLength; i++) {
-        str += '*'
+        str += "*";
       }
-      return str
+      return str;
     })() +
     dest.companyName.substr(-2, 2)
-  )
+  );
 }
 
 function hideCompanyContactUserName(dest) {
@@ -940,27 +973,27 @@ function hideCompanyContactUserName(dest) {
     return (
       dest.companyContactUserName.substr(0, 1) +
       Array.prototype.map
-        .call(dest.companyContactUserName.substr(1), () => '*')
-        .join('')
-    )
+        .call(dest.companyContactUserName.substr(1), () => "*")
+        .join("")
+    );
   }
   return (
     dest.companyContactUserName.substr(0, 2) +
     Array.prototype.map
-      .call(dest.companyContactUserName.substr(2), () => '*')
-      .join('')
-  )
+      .call(dest.companyContactUserName.substr(2), () => "*")
+      .join("")
+  );
 }
 
 function hideCompanyContactUserTel(dest) {
   if (!dest.companyContactUserTel) {
-    return ''
+    return "";
   }
   return (
     dest.companyContactUserTel.substr(0, 3) +
-    '****' +
+    "****" +
     dest.companyContactUserTel.substr(-4)
-  )
+  );
 }
 </script>
 

@@ -56,6 +56,8 @@ import resubmitButton from '@/components/ApprovalOperateButton/resubmitButton'
 import revokeButton from '@/components/ApprovalOperateButton/revokeButton'
 // 审批流组件
 import ApprovalFlow from '@/components/ApprovalFlow'
+// 气泡背景组件
+import BubblesBg from '@/components/BubblesBg'
 
 const app = createApp(App)
 
@@ -86,6 +88,7 @@ app.component('viewButton', viewButton)
 app.component('resubmitButton', resubmitButton)
 app.component('revokeButton', revokeButton)
 app.component('ApprovalFlow', ApprovalFlow)
+app.component('BubblesBg', BubblesBg)
 app.use(router)
 app.use(store)
 app.use(plugins)

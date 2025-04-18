@@ -22,6 +22,9 @@ export default {
                 nickName: userStore.nickName, // 昵称, 不填则展示默认昵称
             },
             ui: {
+                base: {
+                    icon: 'https://aka-noodle.obs.cn-east-3.myhuaweicloud.com/output_20250418_a7XmF6RN.png'
+                },
                 header: {
                     isShow: true,
                 },
