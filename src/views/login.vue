@@ -13,7 +13,7 @@
           class="font-heading text-6xl font-bold text-background opacity-80 backdrop-blur-md"
           v-show="!clickFlag"
         >
-          Hello
+          BoEdge
         </span>
         <div class="login" v-show="clickFlag">
           <el-form
