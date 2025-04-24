@@ -73,7 +73,16 @@ const useUserStore = defineStore(
             reject(error)
           })
         })
-      }
+      },
+      logoutWithoutRequest() {
+        return new Promise((resolve, reject) => {
+          this.token = ''
+          this.roles = []
+          this.permissions = []
+          removeToken()
+          resolve()
+        })
+      },
     }
   })
 
