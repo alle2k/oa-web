@@ -202,3 +202,14 @@ function hideCompanyContactUserTel(dest) {
   )
 }
 </script>
+
+<style scoped lang="scss">
+.drawer {
+  :deep(.el-drawer__body) {
+    padding-top: 0px;
+  }
+  :deep(.el-drawer__header) {
+    margin-bottom: 0px;
+  }
+}
+</style>

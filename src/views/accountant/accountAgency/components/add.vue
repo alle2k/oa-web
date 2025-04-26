@@ -16,6 +16,7 @@
           v-model="orderForm.contractId"
           placeholder="请选择合同"
           clearable
+          filterable
         >
           <el-option
             v-for="contract in contracts"
