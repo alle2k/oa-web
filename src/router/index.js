@@ -157,7 +157,22 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
-  }
+  },
+  {
+    path: '/approval/detail',
+    component: Layout,
+    hidden: true,
+    permissions: ['biz:order:list', ''],
+    children: [
+      {
+        path: ':auditType(\\d+)/:bizId(\\d+)',
+        component: () => import('@/views/approval/detail'),
+        name: 'ApprovalDetail',
+        meta: { title: '业务详情' },
+        props: true
+      }
+    ]
+  },
 ]
 
 const router = createRouter({

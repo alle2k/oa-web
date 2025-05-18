@@ -118,4 +118,12 @@ function handleUploadError(err) {
 function handlePreview(file) {
   emit('filePreview', file)
 }
+
+function clearAll() {
+  fileList.value = [];
+}
+
+defineExpose({
+  clearAll,
+});
 </script>
