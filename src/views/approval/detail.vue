@@ -25,14 +25,16 @@
         <h2>{{ basicInfo.title }}</h2>
         <div style="display: flex; justify-content: space-between">
           <span>
-            所在部门：{{ basicInfo.bizInfo.createUserFullDeptName }}>{{
-              basicInfo.bizInfo.createUserName
+            所在部门：{{
+              (basicInfo.bizInfo.createUserFullDeptName
+                ? basicInfo.bizInfo.createUserFullDeptName + ">"
+                : "") + basicInfo.bizInfo.createUserName
             }}
           </span>
         </div>
       </div>
       <bizDetail :bizInfo="basicInfo.bizInfo" />
-      <div class="flow">
+      <div class="flow" v-if="basicInfo.nodeInfo.length">
         <h3 id="flow">审批流程</h3>
         <approvalFlow :node-info="basicInfo.nodeInfo" />
       </div>
