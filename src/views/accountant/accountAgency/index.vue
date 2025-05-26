@@ -223,7 +223,6 @@ import edit from "./components/edit.vue";
 
 const { proxy } = getCurrentInstance();
 const { name } = useRoute();
-console.log(name);
 
 const nodeList = ref([]);
 var viewDrawer = ref({});

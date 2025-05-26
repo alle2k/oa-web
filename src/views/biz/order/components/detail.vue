@@ -71,6 +71,16 @@
           {{ bizType }}
         </el-descriptions-item>
         <el-descriptions-item
+          label="关联合同："
+          label-align="right"
+          align="left"
+          v-if="contractNo"
+        >
+          <el-button type="primary" size="small" text>
+            {{ contractNo }}
+          </el-button>
+        </el-descriptions-item>
+        <el-descriptions-item
           label="成交金额："
           label-align="right"
           align="left"
@@ -156,7 +166,11 @@
 
       <div>
         <span class="subtitle">打款截图</span>
-        <el-table class="fileTable" border :data="bizInfo.paymentScreenshotList">
+        <el-table
+          class="fileTable"
+          border
+          :data="bizInfo.paymentScreenshotList"
+        >
           <template #empty>暂无附件</template>
           <el-table-column
             width="100"
@@ -238,6 +252,13 @@ const bizType = computed(() => {
       return x.bizTypeName;
     })
     .join(", ");
+});
+
+const contractNo = computed(() => {
+  if (!bizInfo.value.refOrderList.length) {
+    return null;
+  }
+  return bizInfo.value.refOrderList[0]?.auditNo;
 });
 
 const companyNameVisitFlag = ref(false);

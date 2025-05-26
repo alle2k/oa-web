@@ -175,6 +175,18 @@ var insertForm = ref({
   bizTypeList: undefined,
   contractId: undefined,
 });
+const saveOrderRequest = {
+  paymentTime: undefined,
+  companyName: undefined,
+  companyContactUserName: undefined,
+  companyContactUserTel: undefined,
+  amount: undefined,
+  remark: undefined,
+  annexUrlList: undefined,
+  paymentScreenshotList: undefined,
+  bizTypeList: undefined,
+  refIds: undefined,
+};
 
 function annexPreview(file) {
   emit("filePreview", file);
@@ -191,7 +203,14 @@ function submitForm(form) {
       return;
     }
     if (valid) {
-      save(insertForm.value).then((response) => {
+      var obj = {};
+      for (let i in saveOrderRequest) {
+        obj[i] = insertForm.value[i];
+      }
+      if (insertForm.value.contractId) {
+        obj.refIds = [insertForm.value.contractId];
+      }
+      save(obj).then((response) => {
         proxy.$modal.msgSuccess("新增成功");
         emit("refresh");
       });

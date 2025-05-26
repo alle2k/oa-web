@@ -1,6 +1,18 @@
 <template>
   <div v-if="!loading" />
   <div class="applyDetails" v-else>
+    <el-affix :offset="0">
+      <header>
+        <div>
+          <el-button plain type="primary" @click="proxy.$modal.notifySuccess('火速开发中，敬请期待')">
+            下一条
+          </el-button>
+          <el-button plain type="primary" @click="router.back()">
+            返回列表
+          </el-button>
+        </div>
+      </header>
+    </el-affix>
     <el-affix style="height: 0" :offset="211">
       <el-anchor @click="handleClick">
         <div class="link">
@@ -210,6 +222,9 @@ const props = defineProps({
     required: true,
   },
 });
+
+const router = useRouter();
+console.log(router);
 
 const applyImgMap = reactive({
   1: adoptPng,
@@ -516,6 +531,13 @@ function applyReturn() {
       margin-left: 0;
       margin-bottom: 15px;
     }
+  }
+
+  header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 60px;
+    background: #ffffff;
   }
 
   footer {

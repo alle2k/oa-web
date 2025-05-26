@@ -82,7 +82,6 @@
           range-separator="至"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          @change="test"
           value-format="YYYY-MM-DD"
           style="width: 292.2px"
         ></el-date-picker>
@@ -106,58 +105,58 @@
 </template>
   
 <script setup>
-import { reactive, ref, computed } from 'vue'
-import { pageQuery } from '@/api/core/businessOrder'
-import { add } from '@/api/core/accountAgency'
+import { reactive, ref, computed } from "vue";
+import { pageQuery } from "@/api/core/businessOrder";
+import { add } from "@/api/core/accountAgency";
 
-const { proxy } = getCurrentInstance()
+const { proxy } = getCurrentInstance();
 
-const emit = defineEmits(['closeDialog', 'refresh'])
+const emit = defineEmits(["closeDialog", "refresh"]);
 
 // 假设这是你获取的合同列表
-const contracts = ref([])
+const contracts = ref([]);
 
-const activeStep = ref(0)
+const activeStep = ref(0);
 const orderForm = reactive({
-  contractId: null
-})
+  contractId: null,
+});
 const orderFormRules = reactive({
-  contractId: [{ required: true, message: '请选择合同', trigger: 'change' }]
-})
-const formDetailsRef = ref(null)
+  contractId: [{ required: true, message: "请选择合同", trigger: "change" }],
+});
+const formDetailsRef = ref(null);
 const formDetails = reactive({
   dateRange: null,
-  amount: null
-})
+  amount: null,
+});
 const formDetailsRules = reactive({
   dateRange: [
-    { required: true, message: '请输入服务起止时间', trigger: 'blur' }
+    { required: true, message: "请输入服务起止时间", trigger: "blur" },
   ],
-  amount: [{ required: true, message: '请输入金额', trigger: 'blur' }]
-})
+  amount: [{ required: true, message: "请输入金额", trigger: "blur" }],
+});
 
 // 根据选择的合同ID获取对应的合同信息
 const selectedContract = computed(() => {
   return (
     contracts.value.find((contract) => contract.id === orderForm.contractId) ||
     {}
-  )
-})
+  );
+});
 
 const nextStep = () => {
   // 加载合同基本信息逻辑，可在此调用接口获取更多信息
-  activeStep.value = 1
-}
+  activeStep.value = 1;
+};
 
 const prevStep = () => {
-  activeStep.value = 0
-  proxy.resetForm('formDetailsRef')
-}
+  activeStep.value = 0;
+  proxy.resetForm("formDetailsRef");
+};
 
 const handleSave = (form) => {
   // 数据校验和保存逻辑
   if (!form) {
-    return
+    return;
   }
   form.validate((valid) => {
     if (valid) {
@@ -165,42 +164,38 @@ const handleSave = (form) => {
         amount: formDetails.amount,
         serviceBeginDate: formDetails.dateRange[0],
         serviceEndDate: formDetails.dateRange[1],
-        orderId: orderForm.contractId
-      }
+        orderId: orderForm.contractId,
+      };
       add(data).then((response) => {
-        proxy.$modal.msgSuccess('新增成功')
-        emit('refresh')
-      })
-      emit('closeDialog')
+        proxy.$modal.msgSuccess("新增成功");
+        emit("refresh");
+      });
+      emit("closeDialog");
     }
-  })
-}
+  });
+};
 
 const clearAll = () => {
-  orderForm.contractId = null
-  formDetails.dateRange = null
-  formDetails.amount = null
-  activeStep.value = 0
-}
-
-const test = (value) => {
-  console.log(value)
-}
+  orderForm.contractId = null;
+  formDetails.dateRange = null;
+  formDetails.amount = null;
+  activeStep.value = 0;
+};
 
 const getList = async () => {
   const res = await pageQuery({
     pageSize: 9999,
     bizType: 1,
-    approvalStatus: 1
-  })
-  contracts.value = res.rows
-}
+    approvalStatus: 1,
+  });
+  contracts.value = res.rows;
+};
 
 defineExpose({
-  clearAll
-})
+  clearAll,
+});
 
-getList()
+getList();
 </script>
   
 <style scoped lang="scss">
