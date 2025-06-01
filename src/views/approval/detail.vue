@@ -81,7 +81,7 @@
         </div>
         <div
           v-if="
-            basicInfo.currentAuditUserList?.includes(userStore.id) ||
+            basicInfo.currentAuditUserList?.map(x => x.id)?.includes(userStore.id) ||
             userStore.permissions?.includes('*:*:*')
           "
           style="display: flex"
