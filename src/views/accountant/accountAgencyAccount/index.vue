@@ -8,23 +8,16 @@
       label-position="left"
       ref="queryFormRef"
     >
-      <el-form-item label="审批编号" prop="auditNo">
+      <el-form-item label="合同编号" prop="contractNo">
         <el-input
-          placeholder="请输入审批编号"
+          placeholder="请输入合同编号"
           style="width: 240px"
           clearable
-          v-model="queryForm.auditNo"
+          v-model="queryForm.contractNo"
         />
       </el-form-item>
       <el-form-item label="提交人" prop="createUser">
         <UserSelect v-model:userSelectModel="queryForm.createUser" />
-      </el-form-item>
-      <el-form-item
-        label="审批状态"
-        prop="approvalStatus"
-        v-if="name !== 'ExpirationRemind'"
-      >
-        <ApprovalStatusSelect v-model:modelValue="queryForm.approvalStatus" />
       </el-form-item>
       <el-form-item label="服务起止时间" label-width="100" prop="serviceDate">
         <el-date-picker
@@ -36,57 +29,20 @@
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="getList"
-          >查询</el-button
-        >
-        <el-button type="Refresh" icon="RefreshRight" @click="resetQueryArea"
-          >重置</el-button
-        >
-      </el-form-item>
     </el-form>
-    <el-row :gutter="10" class="mb8" v-if="name === 'AccountAgencyApply'">
-      <el-col :span="1.5" v-if="checkPermi(['account:agency:sensitive'])">
-        <el-button type="success" plain :icon="visitIcon" @click="visitHandle">
-          {{ visitText }}
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="Plus"
-          @click="insertDialogVisibleFlag = true"
-          >新增</el-button
-        >
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" @click="del"
-          >删除</el-button
-        >
-      </el-col>
+    <el-row :gutter="10" class="mb8">
+      <el-button type="primary" icon="Search" @click="getList">查询</el-button>
+      <el-button type="Refresh" icon="RefreshRight" @click="resetQueryArea"
+        >重置</el-button
+      >
+      <el-button type="success" plain :icon="visitIcon" @click="visitHandle">
+        {{ visitText }}
+      </el-button>
       <RightToolbar v-model:showSearch="showSearch" @queryTable="getList" />
-    </el-row>
-    <el-row
-      :gutter="10"
-      class="mb8"
-      v-if="name == 'AccountAgency' && checkPermi(['account:agency:sensitive'])"
-    >
-      <el-col :span="1.5">
-        <el-button type="success" plain :icon="visitIcon" @click="visitHandle">
-          {{ visitText }}
-        </el-button>
-      </el-col>
     </el-row>
 
     <el-table stripe v-loading="loading" :data="dataList" ref="tableRef">
-      <el-table-column
-        type="selection"
-        width="55"
-        align="center"
-        :selectable="allowEdit"
-      />
-      <el-table-column fixed label="审批编号" prop="auditNo" width="150" />
+      <el-table-column fixed label="合同编号" prop="contractNo" width="150" />
       <el-table-column label="甲方公司名称" prop="companyNameShow" width="210">
         <template #default="scope">
           <el-button
@@ -134,7 +90,6 @@
           <span v-else>{{ scope.row.companyContactUserTelShow }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="合同成交金额" prop="orderAmount" width="150" />
       <el-table-column label="代理记账服务费" prop="amount" width="150" />
       <el-table-column label="服务开始时间" prop="serviceBeginDate" width="150">
         <template #default="scope">
@@ -147,21 +102,11 @@
         </template>
       </el-table-column>
       <el-table-column label="提交人" prop="createUserName" width="150" />
-      <el-table-column label="审批状态" prop="approvalStatus" width="100">
-        <template #default="scope">
-          {{ proxy.parseApprovalStatus(scope.row.approvalStatus) }}
-        </template>
-      </el-table-column>
       <el-table-column label="操作" fixed="right" align="center" width="150">
         <template #default="scope">
-          <el-button link type="primary" @click="toDetail(scope.row.id)"
+          <el-button link type="primary" @click="toInfo(scope.row.id)"
             >详情</el-button
           >
-          <resubmitButton
-            v-if="name === 'AccountAgencyApply'"
-            :row="scope.row"
-            @openEditDrawer="openEditDrawer"
-          />
         </template>
       </el-table-column>
     </el-table>
@@ -174,37 +119,19 @@
       @pagination="getList"
     />
   </div>
-
-  <el-dialog
-    v-model="insertDialogVisibleFlag"
-    title="保存"
-    @close="closeInsertForm"
-    :close-on-click-modal="false"
-  >
-    <add ref="addRef" @closeDialog="closeInsertForm" @refresh="getList" />
-  </el-dialog>
-
-  <edit
-    v-model:dialogVisible="editDrawer"
-    :modify-form="modifyForm"
-    @refresh="getList"
-  />
 </template>
   
 <script setup name="AccountAgency">
 import { checkPermi } from "@/utils/permission";
 import { parseTime } from "@/utils/oa";
-import add from "./components/add.vue";
-import { pageQuery, delBatch } from "@/api/core/accountAgency";
-import edit from "./components/edit.vue";
+import { pageQuery } from "@/api/core/accountAgencyAccount";
 
 const { proxy } = getCurrentInstance();
-const { name } = useRoute();
 
 const showSearch = ref(true);
 const queryFormRef = ref(null);
 const queryForm = reactive({
-  auditNo: undefined,
+  contractNo: undefined,
   createUser: undefined,
   approvalStatus: undefined,
   companyName: undefined,
@@ -214,17 +141,6 @@ const queryForm = reactive({
   pageNum: 1,
   pageSize: 10,
 });
-
-const auditShowFlag = ref(false);
-if (name !== "AccountAgencyApply") {
-  if (name === "ExpirationRemind") {
-    queryForm.overdueFlag = 1;
-    queryForm.approvalStatus = 1;
-  } else {
-    queryForm.approvalStatusList = [0, 1];
-    auditShowFlag.value = true;
-  }
-}
 
 const visitFlag = ref(false);
 const visitIcon = ref("View");
@@ -261,54 +177,7 @@ function visitHandle() {
   }
 }
 
-const addRef = ref(null);
-
-const closeInsertForm = () => {
-  insertDialogVisibleFlag.value = false;
-  addRef.value.clearAll();
-};
-var insertDialogVisibleFlag = ref(false);
-
-var modifyForm = ref({});
-var editDrawer = ref(false);
-function openEditDrawer() {
-  editDrawer.value = true;
-  modifyForm.value = JSON.parse(JSON.stringify(arguments[0]));
-  modifyForm.value.paymentTime = parseTime(
-    new Date(modifyForm.value.paymentTime)
-  );
-  modifyForm.value.dateRange = [
-    parseTime(new Date(modifyForm.value.serviceBeginDate), "{y}-{m}-{d}"),
-    parseTime(new Date(modifyForm.value.serviceEndDate), "{y}-{m}-{d}"),
-  ];
-}
-
-function allowEdit(row, index) {
-  return (
-    row.approvalStatus === 4 ||
-    row.approvalStatus === 2 ||
-    row.approvalStatus === 5
-  );
-}
-
 const tableRef = ref(null);
-function del() {
-  proxy.$modal.confirm("确定删除吗？").then(() => {
-    var ids = tableRef.value.getSelectionRows().map((x) => x.id);
-    if (!ids.length) {
-      getList();
-      return;
-    }
-    delBatch(ids)
-      .then(() => {
-        proxy.$message.success("删除成功");
-        getList();
-      })
-      .catch(() => {
-        proxy.$message.error("删除失败");
-      });
-  });
-}
 
 function resetQueryArea() {
   proxy.resetForm("queryFormRef");
@@ -372,14 +241,10 @@ function viewCompanyContactUserTel(row) {
 }
 
 const router = useRouter();
-function toDetail(id) {
-  var obj = {
-    path: `/approval/detail/1002/${id}`,
-  };
-  if (!auditShowFlag.value) {
-    obj.query = { flag: 0 };
-  }
-  router.push(obj);
+function toInfo(id) {
+  router.push({
+    path: `/accountant/accountAgency/info/${id}`,
+  });
 }
 
 onMounted(() => {

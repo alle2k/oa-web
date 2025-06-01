@@ -4,7 +4,11 @@
     <el-affix :offset="0">
       <header>
         <div>
-          <el-button plain type="primary" @click="proxy.$modal.notifySuccess('火速开发中，敬请期待')">
+          <el-button
+            plain
+            type="primary"
+            @click="proxy.$modal.notifySuccess('火速开发中，敬请期待')"
+          >
             下一条
           </el-button>
           <el-button plain type="primary" @click="router.back()">
@@ -45,7 +49,7 @@
           </span>
         </div>
       </div>
-      <bizDetail :bizInfo="basicInfo.bizInfo" />
+      <component :is="approvalMap[auditType]" :bizInfo="basicInfo.bizInfo" />
       <div class="flow" v-if="basicInfo.nodeInfo.length">
         <h3 id="flow">审批流程</h3>
         <approvalFlow :node-info="basicInfo.nodeInfo" />
@@ -53,7 +57,7 @@
     </div>
     <el-affix
       v-hasPermi="['approval']"
-      v-if="basicInfo.bizInfo.approvalStatus === 0"
+      v-if="basicInfo.bizInfo.approvalStatus === 0 && flag !== '0'"
       position="bottom"
     >
       <footer>
@@ -203,7 +207,8 @@ import refusePng from "@/assets/images/refuse.png";
 import revokePng from "@/assets/images/revoke.png";
 import returnPng from "@/assets/images/return.png";
 import approvalFlow from "@/components/ApprovalFlow2/index.vue";
-import bizDetail from "@/views/biz/order/components/detail.vue";
+import orderDetail from "@/views/biz/order/components/detail.vue";
+import accountAgencyDetail from "@/views/accountant/accountAgency/components/detail.vue";
 import useUserStore from "@/store/modules/user";
 import { specialApprovalForm } from "@/utils/oa";
 import { audit, rollback } from "@/api/core/flowable";
@@ -222,9 +227,21 @@ const props = defineProps({
     required: true,
   },
 });
+const auditType = computed(() => {
+  return props.auditType;
+});
+
+const route = useRoute();
+const flag = computed(() => {
+  return route.query.flag;
+});
 
 const router = useRouter();
-console.log(router);
+
+const approvalMap = reactive({
+  1001: orderDetail,
+  1002: accountAgencyDetail,
+});
 
 const applyImgMap = reactive({
   1: adoptPng,
@@ -425,6 +442,7 @@ const annexPreview = async (arg) => {
 const loading = ref(false);
 const auditTitleObj = {
   1001: "提交订单申请",
+  1002: "代理记账申请",
 };
 onMounted(() => {
   getDetail().then((x) => (loading.value = true));

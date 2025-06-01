@@ -38,3 +38,10 @@ export function modify(data) {
         data: data
     })
 }
+
+export function detail(id) {
+    return request({
+        url: `/accountAgency/${id}`,
+        method: 'get'
+    })
+}

@@ -162,13 +162,28 @@ export const dynamicRoutes = [
     path: '/approval/detail',
     component: Layout,
     hidden: true,
-    permissions: ['biz:order:list', ''],
+    permissions: ['biz:order:list', 'accountant:accountAgency:list'],
     children: [
       {
         path: ':auditType(\\d+)/:bizId(\\d+)',
         component: () => import('@/views/approval/detail'),
         name: 'ApprovalDetail',
         meta: { title: '业务详情' },
+        props: true
+      }
+    ]
+  },
+  {
+    path: '/accountant/accountAgency/info',
+    component: Layout,
+    hidden: true,
+    permissions: ['accountant:accountAgency:list'],
+    children: [
+      {
+        path: ':id(\\d+)',
+        component: () => import('@/views/accountant/accountAgencyAccount/components/info'),
+        name: 'AccountAgencyInfo',
+        meta: { title: '代理记账详情' },
         props: true
       }
     ]

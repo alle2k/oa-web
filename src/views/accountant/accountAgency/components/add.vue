@@ -187,6 +187,7 @@ const getList = async () => {
     pageSize: 9999,
     bizType: 1,
     approvalStatus: 1,
+    menuFlag: 0,
   });
   contracts.value = res.rows;
 };
